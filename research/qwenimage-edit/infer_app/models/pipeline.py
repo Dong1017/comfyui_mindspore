@@ -81,7 +81,7 @@ class QwenImageEditPipelineWrapper(QwenImageEditPipeline):
             if processor is None:
                 processor = Qwen2VLProcessor.from_pretrained(
                     pretrained_model_name_or_path,
-                    subfolder="text_encoder"
+                    subfolder="processor"
                 )
 
         # Create the pipeline

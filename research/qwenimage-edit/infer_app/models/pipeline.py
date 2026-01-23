@@ -22,6 +22,7 @@ import mindspore as ms
 
 # Import from mindone diffusers for QwenImageEditPipeline
 from mindone.diffusers import QwenImageEditPipeline
+from mindone.diffusers.schedulers import FlowMatchEulerDiscreteScheduler
 
 from models.transformer import QwenImageTransformer2DModel
 from models.vae import AutoencoderKLQwenImage
@@ -84,6 +85,12 @@ class QwenImageEditPipelineWrapper(QwenImageEditPipeline):
                     subfolder="processor"
                 )
 
+        # Load scheduler (required)
+        scheduler = FlowMatchEulerDiscreteScheduler.from_pretrained(
+            pretrained_model_name_or_path,
+            subfolder="scheduler"
+        )
+
         # Create the pipeline
         pipeline = cls(
             transformer=transformer,
@@ -91,6 +98,7 @@ class QwenImageEditPipelineWrapper(QwenImageEditPipeline):
             text_encoder=text_encoder,
             tokenizer=tokenizer,
             processor=processor,
+            scheduler=scheduler,
             **kwargs
         )
 

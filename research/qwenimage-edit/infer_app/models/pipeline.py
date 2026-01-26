@@ -82,7 +82,8 @@ class QwenImageEditPipelineWrapper(QwenImageEditPipeline):
             if processor is None:
                 processor = Qwen2VLProcessor.from_pretrained(
                     pretrained_model_name_or_path,
-                    subfolder="processor"
+                    subfolder="processor",
+                    use_fast=False
                 )
 
         # Load scheduler (required)

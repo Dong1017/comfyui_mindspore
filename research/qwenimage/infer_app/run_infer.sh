@@ -1,14 +1,14 @@
 #!/bin/bash
-export ASCEND_RT_VISIBLE_DEVICES=0,1
+export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7
 
 # Distributed training configuration
 MASTER_ADDR=${MASTER_ADDR:-"127.0.0.1"}
 MASTER_PORT=${MASTER_PORT:-$(shuf -i 20001-29999 -n 1)}
-NPROC_PER_NODE=${WORLD_SIZE:-2}
+NPROC_PER_NODE=${WORLD_SIZE:-4}
 
 entry_file="example_inference.py"
 
-model_id="Qwen-Image"
+model_id="/home/dxw/Qwen-Image"
 
 msrun --worker_num=${NPROC_PER_NODE} \
     --local_worker_num=${NPROC_PER_NODE} \

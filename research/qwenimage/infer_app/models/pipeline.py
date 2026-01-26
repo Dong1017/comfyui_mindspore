@@ -616,7 +616,8 @@ class QwenImagePipeline(DiffusionPipeline, QwenImageLoraLoaderMixin):
         negative_txt_seq_lens = (
             negative_prompt_embeds_mask.sum(dim=1).tolist() if negative_prompt_embeds_mask is not None else None
         )
-
+        np.save("hidden_states.npy", latents.cpu().float().numpy())
+        np.save("encoder_hidden_states.npy", prompt_embeds.cpu().float().numpy())
         # 6. Denoising loop
         self.scheduler.set_begin_index(0)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
@@ -638,7 +639,7 @@ class QwenImagePipeline(DiffusionPipeline, QwenImageLoraLoaderMixin):
                     attention_kwargs=self.attention_kwargs,
                     return_dict=False,
                 )[0]
-
+                np.save(f"noise_pred_{i}.npy", noise_pred.cpu().float().numpy())
                 if do_true_cfg:
                     neg_noise_pred = self.transformer(
                         hidden_states=latents.to(self.transformer.dtype),
@@ -651,6 +652,7 @@ class QwenImagePipeline(DiffusionPipeline, QwenImageLoraLoaderMixin):
                         attention_kwargs=self.attention_kwargs,
                         return_dict=False,
                     )[0]
+                    np.save(f"neg_noise_pred_{i}.npy", neg_noise_pred.cpu().float().numpy())
                     comb_pred = neg_noise_pred + true_cfg_scale * (noise_pred - neg_noise_pred)
 
                     cond_norm = mint.norm(noise_pred, dim=-1, keepdim=True)
@@ -660,7 +662,7 @@ class QwenImagePipeline(DiffusionPipeline, QwenImageLoraLoaderMixin):
                 # compute the previous noisy sample x_t -> x_t-1
                 latents_dtype = latents.dtype
                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
-
+                np.save(f"latents_{i}.npy", latents.cpu().float().numpy())
                 if latents.dtype != latents_dtype:
                     latents = latents.to(latents_dtype)
 

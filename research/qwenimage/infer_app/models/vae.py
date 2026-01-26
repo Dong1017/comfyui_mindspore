@@ -28,7 +28,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 
 import mindspore as ms
-from mindspore import mint, nn
+from mindspore import mint, nn, ops
 from mindspore.ops.auto_generate.gen_ops_prim import conv2d_ext_op
 
 from mindone.diffusers.configuration_utils import ConfigMixin, register_to_config
@@ -441,7 +441,8 @@ class QwenImageAttentionBlock(nn.Cell):
         q, k, v = qkv.chunk(3, dim=-1)
 
         # apply attention
-        x = _scaled_dot_product_attention_native(q, k, v, dtype=ms.float32)
+        # x = _scaled_dot_product_attention_native(q, k, v, dtype=ms.float32)
+        x = ops.prompt_flash_attention(q, k, v, num_heads=1, scale_value=1 / (q.shape[-1] ** 0.5), input_layout="BNSD")
         x = x.squeeze(1).permute(0, 2, 1).reshape(batch_size * time, channels, height, width)
 
         # output projection

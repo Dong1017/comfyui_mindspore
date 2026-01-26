@@ -5,8 +5,7 @@ from mindspore import mint, ops
 
 DTYPE_FP16_MIN = float(np.finfo(np.float16).min)
 
-
-def _scaled_dot_product_attention_native(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, dtype=None):
+def _scaled_dot_product_attention_native_orig(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, dtype=None):
     # force dtype(fp16 or bf16) precision calculation
     ori_dtype = query.dtype
     if dtype is not None:
@@ -42,5 +41,26 @@ def _scaled_dot_product_attention_native(query, key, value, attn_mask=None, drop
 
     out = mint.matmul(attn_weight, value)
     out = out.astype(ori_dtype)
+
+    return out
+
+def _scaled_dot_product_attention_native(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, dtype=None):
+    if attn_mask is None and is_causal:
+        L, S = query.shape[-2], key.shape[-2]
+        attn_mask = mint.ones((L, S), dtype=ms.bool_).tril(diagonal=0)
+
+    num_heads = query.shape[1]
+    scale_value = 1 / (query.shape[-1] ** 0.5)
+    inner_precise = 0  # int(query.dtype == ms.float16)
+    input_layout = "BNSD"
+
+    # print(f"#--- _scaled_dot_product_attention_native")
+    # print(f"#--- scale={scale_value}")
+    # print(f"#--- inner_precise={inner_precise}")
+    # print(f"#--- head_num={num_heads}")
+    # print(f"#--- attn_mask={attn_mask}")    
+    out = ops.operations.nn_ops.PromptFlashAttention(
+        num_heads=num_heads, scale_value=scale_value, input_layout=input_layout, inner_precise=inner_precise
+    )(query.to(ms.float16), key.to(ms.float16), value.to(ms.float16), attn_mask)
 
     return out

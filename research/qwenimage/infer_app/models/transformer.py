@@ -318,7 +318,7 @@ class QwenDoubleStreamAttnProcessor2_0:
             attn_mask=attention_mask,
             dropout_p=0.0,
             is_causal=False,
-            dtype=ms.float32,
+            # dtype=ms.float16,
         )
         joint_hidden_states = joint_hidden_states.permute(0, 2, 1, 3)
 
@@ -452,6 +452,8 @@ class QwenImageTransformerBlock(nn.Cell):
             encoder_hidden_states = encoder_hidden_states.clip(-65504, 65504)
         if hidden_states.dtype == ms.float16:
             hidden_states = hidden_states.clip(-65504, 65504)
+        # print(ms.Tensor.any(hidden_states.isinf()), ms.Tensor.any(encoder_hidden_states.isinf()))
+        # print(ms.Tensor.any(hidden_states.isnan()), ms.Tensor.any(encoder_hidden_states.isnan()))
 
         return encoder_hidden_states, hidden_states
 
@@ -609,6 +611,7 @@ class QwenImageTransformer2DModel(
         image_rotary_emb = self.pos_embed(img_shapes, txt_seq_lens)
 
         for index_block, block in enumerate(self.transformer_blocks):
+            # print("#---- ", index_block)
             encoder_hidden_states, hidden_states = block(
                 hidden_states=hidden_states,
                 encoder_hidden_states=encoder_hidden_states,

@@ -1,5 +1,5 @@
 #!/bin/bash
-export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7
+export ASCEND_RT_VISIBLE_DEVICES=0,1,2,3
 
 # Distributed training configuration
 MASTER_ADDR=${MASTER_ADDR:-"127.0.0.1"}

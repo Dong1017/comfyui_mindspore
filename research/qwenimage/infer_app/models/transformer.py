@@ -36,7 +36,7 @@ from mindone.diffusers.models.modeling_utils import ModelMixin
 from mindone.diffusers.models.normalization import AdaLayerNormContinuous, RMSNorm
 from mindone.diffusers.utils import logging
 
-from .utils import _scaled_dot_product_attention_native
+from .utils import _scaled_dot_product_attention_fp32
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
@@ -311,14 +311,13 @@ class QwenDoubleStreamAttnProcessor2_0:
 
         # Compute joint attention
         joint_query, joint_key, joint_value = (x.permute(0, 2, 1, 3) for x in (joint_query, joint_key, joint_value))
-        joint_hidden_states = _scaled_dot_product_attention_native(
+        joint_hidden_states = _scaled_dot_product_attention_fp32(
             joint_query,
             joint_key,
             joint_value,
             attn_mask=attention_mask,
             dropout_p=0.0,
             is_causal=False,
-            # dtype=ms.float16,
         )
         joint_hidden_states = joint_hidden_states.permute(0, 2, 1, 3)
 
